@@ -19,6 +19,8 @@ executable video
 
   other-modules:
     Wave
+    Environment
+    Util
 
   build-depends:    base ^>=4.15.1.0
                     , text ^>= 1.2.5.0
