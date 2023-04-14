@@ -3,12 +3,15 @@
 module Environment where
 
 import           Codec.Picture (PixelRGBA8(..), Pixel8)
-import           Graphics.SvgTree (Tree)
-import           Reanimate (mkBackgroundPixel, gridLayout, withFillColorPixel)
+import           Graphics.SvgTree (Tree, Cap (..))
+import           Reanimate (mkBackgroundPixel, gridLayout, withFillColorPixel
+                          , Animation, mapA)
 import           Reanimate.Svg (gridLayout, mkBackgroundPixel, mkRect
                               , withFillOpacity, withStrokeColorPixel
-                              , withStrokeOpacity, withStrokeWidth)
+                              , withStrokeOpacity, withStrokeWidth, mkGroup)
 import           Data.String (IsString, fromString)
+import Util (withStrokeCap)
+import Reanimate.LaTeX
 
 red :: PixelRGBA8
 red = PixelRGBA8 223 41 53 255
@@ -55,11 +58,15 @@ darkBlue :: PixelRGBA8
 darkBlue = PixelRGBA8 0x17 0x1D 0x26 255
 
 white :: PixelRGBA8
-white = PixelRGBA8 0xF1 0xDe 0xDE 255
+white = "#F1DEDE"
+
+gray :: PixelRGBA8
+gray = "#7F8594"
 
 background :: Tree
 background = mkBackgroundPixel darkBlue
 
+-- | For visualization purposes
 colorScheme :: Tree
 colorScheme = gridLayout
   [ [ withFillColorPixel red (mkRect 1 1)
@@ -68,6 +75,7 @@ colorScheme = gridLayout
     , withFillColorPixel green (mkRect 1 1)]
   , [withFillColorPixel effectYellow (mkRect 1 1)]
   , [ withFillColorPixel white (mkRect 1 1)
+    , withFillColorPixel gray (mkRect 1 1)
     , withFillColorPixel darkBlue (mkRect 1 1)]]
 
 bgGrid :: Tree
@@ -78,3 +86,14 @@ bgGrid = gridLayout
   $ withStrokeWidth 0.005
   $ withStrokeOpacity 0.3
   $ withFillOpacity 0 (mkRect 1 1)
+
+env :: Animation -> Animation
+env = mapA
+  $ \svg -> mkGroup
+    [ mkBackgroundPixel darkBlue
+    , withFillOpacity 1
+      $ withStrokeCap CapRound
+      $ withStrokeWidth 0.1
+      $ withFillColorPixel white
+      $ withStrokeColorPixel white
+      $ mkGroup [svg]]

@@ -17,9 +17,12 @@ executable video
   hs-source-dirs: src
   main-is: Main.hs
 
+  ghc-options: -O2
+  
   other-modules:
-    Wave
+    Intro
     Environment
+    Wave
     Util
 
   build-depends:    base ^>=4.15.1.0
@@ -30,4 +33,7 @@ executable video
                     , raw-strings-qq
                     , JuicyPixels ^>= 3.3.7
                     , lens ^>=5.1
-
+                    , split ^>=0.2.3.5
+                    , directory ^>= 1.3.7.1
+                    , template-haskell ^>=2.17.0.0
+                    , Interpolation ^>=0.3.0

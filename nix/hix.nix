@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   name = "video";
   compiler-nix-name = "ghc902"; # Version of GHC to use
+  index-state = "2023-03-01T00:00:00Z";
 
   # Tools to include in the development shell
   shell.tools.cabal = "latest";
