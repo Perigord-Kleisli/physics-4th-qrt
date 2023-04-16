@@ -40,6 +40,7 @@ staggerE effect d t svg = mkGroup
     (map (\(f, _, s) -> withFillOpacity 0 $ pathify $ f s) svgs)
   where
     avg_duration = d / fromIntegral (length svgs)
+
     svgs = svgGlyphs svg
 
 -- | Cut off a number after going past a specific value
@@ -55,17 +56,13 @@ clamp min max val
 
 -- | change a Double value with across a duration
 tweenVarToVal :: Var s Double -> Duration -> Double -> Scene s ()
-tweenVarToVal var duration target = tweenVar
-  var
-  duration
-  (\v t -> v + (target - v) * t)
+tweenVarToVal var duration target =
+  tweenVar var duration (\v t -> v + (target - v) * t)
 
 tweenVarToValWithEase
   :: Var s Double -> Signal -> Duration -> Double -> Scene s ()
-tweenVarToValWithEase var s duration target = tweenVar
-  var
-  duration
-  (\v t -> v + (target - v) * s t)
+tweenVarToValWithEase var s duration target =
+  tweenVar var duration (\v t -> v + (target - v) * s t)
 
 -- | Tween with the time value be in a 0..1 range
 tweenNormalized :: Var s a -> Duration -> (a -> Time -> a) -> Scene s ()
@@ -98,6 +95,10 @@ namedList = QuasiQuoter parseList undefined undefined undefined
 mkWave :: Double -> Double -> Double -> [(Double, Double)]
 mkWave amplitude phase frequency =
   [(x, amplitude * sin ((x + phase) * frequency)) | x <- realRange (-8) 8]
+
+mkWave' :: Double -> Double -> Double -> Double -> Double -> [(Double, Double)]
+mkWave' start end amplitude phase frequency =
+  [(x, amplitude * sin ((x + phase) * frequency)) | x <- realRange start end]
 
 withMarkers :: (Maybe Marker, Maybe Marker, Maybe Marker) -> Tree -> Tree
 withMarkers (mStart, mMid, mEnd) svg =
@@ -143,3 +144,49 @@ mkMarker name svg = defaultSvg
   & markerOrient ?~ OrientationAuto
   & markerViewBox ?~ (-5, -5, 10, 10)
   & markerElements .~ [svg]
+
+-- |  The Blackbird combinator
+-- Applies a function after a binary function.
+-- @f .*. g = (\\x y -> f (g x y))@
+--
+--
+-- >>> (Just .*. (+)) 2 3
+-- Just 5
+(.*.) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+(.*.) = (.) . (.)
+
+-- | Subtract the absolute value with a clamp on 0
+-- >>> shorten 1 (-2)
+-- -1
+-- >>> shorten 1 2
+-- 1
+-- >>> shorten 3 2
+-- 0
+shorten :: (Num a, Ord a) => a -> a -> a
+shorten minuend subtrahend = case signum subtrahend of
+  -1 -> min 0 (subtrahend + minuend)
+  1  -> max 0 (subtrahend - minuend)
+  _  -> 0
+
+groupByDistance :: Double -> [(Double, Double)] -> [[(Double, Double)]]
+groupByDistance dist = go []
+  where
+    go accum ((x1, y1):(x2, y2):xs) =
+      if dist >= abs (x1 - x2) && dist >= abs (y1 - y2)
+      then go ((x1, y1):accum) ((x2, y2):xs)
+      else ((x1, y1):accum):go [] ((x2, y2):xs)
+    go accum x = accum : [x]
+
+interp prog (x1,y1) (x2,y2) = (x1 + (x2-x1)*prog, y1 + (y2-y1)*prog )
+
+inDistance dist (x1,y1) (x2,y2) = dist >= abs (x1-x2) && dist >= abs (y1 - y2)
+
+mergeByDistance :: Double -> [(Double, Double)] -> [(Double, Double)]
+mergeByDistance dist xs = map (\x -> sum x / fromIntegral (length x))
+  $ filter (not . null)
+  $ groupByDistance dist xs
+
+mkTriangle = mkLinePath [(-2,-1),(0,2),(2,-1)]
+
+midPoint :: Fractional a => (a,a) -> (a,a) -> (a,a)
+midPoint x y = x + ((y-x)/2)

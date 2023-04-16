@@ -3,15 +3,16 @@
 module Environment where
 
 import           Codec.Picture (PixelRGBA8(..), Pixel8)
-import           Graphics.SvgTree (Tree, Cap (..))
+import           Graphics.SvgTree (Tree, Cap(..))
 import           Reanimate (mkBackgroundPixel, gridLayout, withFillColorPixel
-                          , Animation, mapA)
+                          , Animation, mapA, center, rotate)
 import           Reanimate.Svg (gridLayout, mkBackgroundPixel, mkRect
                               , withFillOpacity, withStrokeColorPixel
-                              , withStrokeOpacity, withStrokeWidth, mkGroup)
+                              , withStrokeOpacity, withStrokeWidth, mkGroup
+                              , scale, mkPathString)
 import           Data.String (IsString, fromString)
-import Util (withStrokeCap)
-import Reanimate.LaTeX
+import           Util (withStrokeCap, mkMarker)
+import           Graphics.SvgTree.Types (Marker)
 
 red :: PixelRGBA8
 red = PixelRGBA8 223 41 53 255
@@ -97,3 +98,23 @@ env = mapA
       $ withFillColorPixel white
       $ withStrokeColorPixel white
       $ mkGroup [svg]]
+
+envNoBg :: Animation -> Animation
+envNoBg = mapA
+  $ \svg -> mkGroup
+    [ withFillOpacity 1
+      $ withStrokeCap CapRound
+      $ withStrokeWidth 0.1
+      $ withFillColorPixel white
+      $ withStrokeColorPixel white
+      $ mkGroup [svg]]
+
+triangleMarker :: Marker
+triangleMarker = mkMarker "triangle"
+  $ scale 0.7
+  $ center
+  $ mkPathString "M 0 0 L 10 5 L 0 10 z"
+
+triangleMarker' :: String -> Marker
+triangleMarker' name =
+  mkMarker name $ scale 0.7 $ center $ mkPathString "M 0 0 L 10 5 L 0 10 z"

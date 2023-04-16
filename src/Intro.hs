@@ -7,7 +7,7 @@ module Intro where
 import           Codec.Picture ()
 import           Control.Lens ((&), (<&>), (.~), (?~), (^.))
 import           Data.Complex ()
-import           Graphics.SvgTree
+import           Graphics.SvgTree (Marker)
 import           Linear.V2 ()
 import           Reanimate
 import           Reanimate.Scene (oDraw, oNew, oShowWith, oModify, oEasing
@@ -17,16 +17,14 @@ import           Reanimate.Scene (oDraw, oNew, oShowWith, oModify, oEasing
 import           Data.Text (pack)
 import           Reanimate.Animation (Sync(..))
 import           Environment (background, bgGrid, white, env, yellow, blue
-                            , effectYellow, darkBlue, gray)
+                            , effectYellow, darkBlue, gray, triangleMarker)
 import           Control.Monad ()
 import           Util (realRange, tweenVarToVal, withStrokeCap, nth
                      , lineWithMarker, withMarkerEnd, withMarkerStart, mkMarker
-                     , tweenVarToValWithEase, staggerE, clamp, mkWave)
+                     , tweenVarToValWithEase, staggerE, clamp, mkWave, shorten)
 import           Control.Applicative (liftA3)
 import           Data.Maybe (fromMaybe)
 import           Reanimate.Svg (scale, translate, pathify)
-import           Data.Functor
-import           Reanimate.Effect
 import           Reanimate.LaTeX (latexCfg, biolinum)
 import           GHC.Float (double2Float)
 import           Control.Arrow (Arrow(..))
@@ -151,13 +149,3 @@ intro = env
       let (l, r) = splitAt (floor $ fromIntegral (length xs) * percent) xs
       in map f l ++ r
 
-    shorten subtrahend minuend = case signum minuend of
-      -1 -> min 0 (minuend + subtrahend)
-      1  -> max 0 (minuend - subtrahend)
-      _  -> 0
-
-    triangleMarker :: Marker
-    triangleMarker = mkMarker "triangle"
-      $ scale 0.7
-      $ center
-      $ mkPathString "M 0 0 L 10 5 L 0 10 z"
