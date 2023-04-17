@@ -23,7 +23,7 @@ import           Control.Applicative
 import           Control.Monad (forM_)
 
 singleWaveAddition :: Animation
-singleWaveAddition = scene
+singleWaveAddition = env $ scene
   do
     wavePhase1 <- newVar 0
     wavePhase2 <- newVar 0

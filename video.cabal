@@ -24,6 +24,7 @@ executable video
     Environment
     Wave
     Util
+    Interference
     Formula
     WaveAddition
 

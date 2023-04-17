@@ -18,6 +18,7 @@ import           Util
 import           Wave
 import qualified Formula as F
 import WaveAddition
+import Interference
 import           System.Directory
 import           Data.Char (digitToInt)
 
