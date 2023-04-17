@@ -191,11 +191,11 @@ formulaTri = scene
         spriteTween title 1 (\t -> translate 0 (curveS 2 t * 5))
     fork $ tweenVar waveLenShine 0.4 (const $ reverseS . powerS 2)
     tweenVar waveFreqShine 0.4 (const $ reverseS . powerS 2)
-    forM_ tri \s -> do 
+    forM_ tri \s -> do
       fork $ spriteTween s 1 (partialSvg . reverseS . curveS 2)
 
-intro :: Animation
-intro = scene
+formulaIntro :: Animation
+formulaIntro = scene
   do
     title <- oNew (withStrokeWidth 0.002 $ center $ latex "Wave Formulas")
     oShowWith title oDraw
@@ -215,6 +215,6 @@ intro = scene
 
 formula :: Animation
 formula = env $ scene do
-  adjustZ (+1) $ fork $ play intro
-  wait (duration intro - 2)
+  adjustZ (+1) $ fork $ play formulaIntro
+  wait (duration formulaIntro - 2)
   play formulaTri
