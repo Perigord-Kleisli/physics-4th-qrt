@@ -229,7 +229,7 @@ wave3D :: Animation
 wave3D = env
   $ mkAnimation 40
   $ \t -> mkGroup
-  $ ([frameAt (duration title * curveS 2 (fromToRangeS 0.8 0.9 0 1 t)) title] ++)
+  $ ([(if fromToRangeS 0.8 0.9 0 1 t < 0.01 then withStrokeOpacity 0 else id) $ frameAt (duration title * curveS 2 (fromToRangeS 0.8 0.9 0 1 t)) title] ++)
   $ pure
   $ translate (-0.4) (-1)
   $ scaleXY 1 0.7
@@ -354,5 +354,6 @@ wave = env
     do
       adjustZ (+ 1) $ fork $ play textIntro
       wait 3
-      play wave3D
+      fork $ play wave3D
+      wait (duration wave3D - 2)
       adjustZ (+ 1) $ play outro

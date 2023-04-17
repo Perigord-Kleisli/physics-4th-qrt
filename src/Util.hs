@@ -30,6 +30,9 @@ fromToRangeS lmin lmax rmin rmax t
   where
     ans = (t - lmin) * ((rmax - rmin) / (lmax - lmin))
 
+fromToRangeS' :: Double -> Double -> Double -> Double -> Signal
+fromToRangeS' lmin lmax rmin rmax t = (t - lmin) * ((rmax - rmin) / (lmax - lmin))
+
 -- | apply an effect to each child in parallel
 staggerE :: Effect -> Effect
 staggerE effect d t svg = mkGroup
@@ -108,7 +111,7 @@ withMarkers (mStart, mMid, mEnd) svg =
         [mStart, mMid, mEnd]
       markers = mkDefinitions
         $ zipWith
-          (\m n -> withId n $ defaultSvg & treeBranch .~ MarkerNode m)
+          (\m n -> withId n $ svg & treeBranch .~ MarkerNode m)
           (catMaybes [mStart, mMid, mEnd])
           (catMaybes markerNames)
   in mkGroup
@@ -177,6 +180,9 @@ groupByDistance dist = go []
       else ((x1, y1):accum):go [] ((x2, y2):xs)
     go accum x = accum : [x]
 
+frameAt' :: Time -> Animation -> SVG
+frameAt' t a = frameAt (t * duration a) a
+
 interp prog (x1,y1) (x2,y2) = (x1 + (x2-x1)*prog, y1 + (y2-y1)*prog )
 
 inDistance dist (x1,y1) (x2,y2) = dist >= abs (x1-x2) && dist >= abs (y1 - y2)
@@ -187,6 +193,12 @@ mergeByDistance dist xs = map (\x -> sum x / fromIntegral (length x))
   $ groupByDistance dist xs
 
 mkTriangle = mkLinePath [(-2,-1),(0,2),(2,-1)]
+
+replicateT :: Applicative m => m a -> m (a,a)
+replicateT m = (,) <$> m <*> m
+
+replicateT3 :: Applicative m => m a -> m (a,a,a)
+replicateT3 m = (,,) <$> m <*> m <*> m
 
 midPoint :: Fractional a => (a,a) -> (a,a) -> (a,a)
 midPoint x y = x + ((y-x)/2)
