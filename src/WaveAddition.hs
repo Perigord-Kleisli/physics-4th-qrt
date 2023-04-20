@@ -171,16 +171,11 @@ waveAddition = env $ scene
       $ (\s1 s2 -> translate 0 (-2.5) $ mkWaveLine $ zipWith (+) s1 s2)
       <$> wave1
       <*> wave2
-    newSpriteA'
-      SyncFreeze
-      (mkAnimation
-         2
-         \((* 6) . curveS 2 -> t) -> translate 0 (-1)
-         $ mkLinePath [(-t, 0), (0, 0), (t, 0)])
-    spriteTween
-      wave3Svg
-      2
-      (\(curveS 2 -> t) -> withStrokeWidth (t * 0.1) . partialSvg t)
+    newSpriteA' SyncFreeze (mkAnimation 2
+                                        \((* 6) . curveS 2 -> t) -> translate 0 (-1)
+                                                    $ mkLinePath [(-t, 0), (0, 0), (t, 0)])
+    spriteTween wave3Svg 2 (\(curveS 2 -> t) -> withStrokeWidth (t * 0.1) . partialSvg t)
+
     wait 1
     tweenVar wave1Freq 2 (\x (curveS 2 -> t) -> x + (t * 2))
     wait 1

@@ -30,9 +30,6 @@ fromToRangeS lmin lmax rmin rmax t
   where
     ans = (t - lmin) * ((rmax - rmin) / (lmax - lmin))
 
-fromToRangeS' :: Double -> Double -> Double -> Double -> Signal
-fromToRangeS' lmin lmax rmin rmax t = (t - lmin) * ((rmax - rmin) / (lmax - lmin))
-
 -- | apply an effect to each child in parallel
 staggerE :: Effect -> Effect
 staggerE effect d t svg = mkGroup
@@ -178,27 +175,61 @@ groupByDistance dist = go []
       if dist >= abs (x1 - x2) && dist >= abs (y1 - y2)
       then go ((x1, y1):accum) ((x2, y2):xs)
       else ((x1, y1):accum):go [] ((x2, y2):xs)
-    go accum x = accum : [x]
+    go accum x = accum:[x]
 
 frameAt' :: Time -> Animation -> SVG
 frameAt' t a = frameAt (t * duration a) a
 
-interp prog (x1,y1) (x2,y2) = (x1 + (x2-x1)*prog, y1 + (y2-y1)*prog )
+interp :: Num b => b -> (b, b) -> (b, b) -> (b, b)
+interp prog (x1, y1) (x2, y2) = (x1 + (x2 - x1) * prog, y1 + (y2 - y1) * prog)
 
-inDistance dist (x1,y1) (x2,y2) = dist >= abs (x1-x2) && dist >= abs (y1 - y2)
+inDistance :: (Ord a, Num a) => a -> (a, a) -> (a, a) -> Bool
+inDistance dist (x1, y1) (x2, y2) = dist >= abs (x1 - x2)
+  && dist >= abs (y1 - y2)
 
 mergeByDistance :: Double -> [(Double, Double)] -> [(Double, Double)]
 mergeByDistance dist xs = map (\x -> sum x / fromIntegral (length x))
   $ filter (not . null)
   $ groupByDistance dist xs
 
-mkTriangle = mkLinePath [(-2,-1),(0,2),(2,-1)]
+mkTriangle :: Tree
+mkTriangle = mkLinePath [(-2, -1), (0, 2), (2, -1)]
 
-replicateT :: Applicative m => m a -> m (a,a)
+replicateT :: Applicative m => m a -> m (a, a)
 replicateT m = (,) <$> m <*> m
 
-replicateT3 :: Applicative m => m a -> m (a,a,a)
+replicateT3 :: Applicative m => m a -> m (a, a, a)
 replicateT3 m = (,,) <$> m <*> m <*> m
 
-midPoint :: Fractional a => (a,a) -> (a,a) -> (a,a)
-midPoint x y = x + ((y-x)/2)
+midPoint :: Fractional a => (a, a) -> (a, a) -> (a, a)
+midPoint x y = x + ((y - x) / 2)
+
+onPercent :: (Fractional a, Enum a) => (a -> b -> c) -> [b] -> [c]
+onPercent f xs = zipWith f [0, 1 / fromIntegral (length xs - 1) .. 1] xs
+
+data ColorRampStop = Stop { stopPosition :: Double, stopValue :: Double }
+
+colorRamp :: [ColorRampStop] -> Signal
+colorRamp [] t = t
+colorRamp [x] _ = stopValue x
+colorRamp stops t = let (Stop stopPos1 stopVal1, Stop stopPos2 stopVal2) =
+                          findBracketingStops t stops
+                        t' = fromToRangeS' 0 1 stopPos1 stopPos2 t
+                    in lerp stopVal1 stopVal2 t'
+
+-- Find the two stops that bracket the current time
+findBracketingStops
+  :: Double -> [ColorRampStop] -> (ColorRampStop, ColorRampStop)
+findBracketingStops t stops = case span ((< t) . stopPosition) stops of
+  ([], x:_)      -> (x, x)
+  (x@(_:_), [])  -> (last x, last x)
+  (x@(_:_), y:_) -> (last x, y)
+  ([], [])       -> error "No stops provided"
+
+-- Linearly interpolate between two values
+lerp :: Double -> Double -> Double -> Double
+lerp a b t = a * (1 - t) + b * t
+
+fromToRangeS' :: Double -> Double -> Double -> Double -> Signal
+fromToRangeS' from1 to1 from2 to2 t =
+  (t - from1) / (to1 - from1) * (to2 - from2) + from2

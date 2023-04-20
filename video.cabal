@@ -26,6 +26,11 @@ executable video
     Util
     Interference
     Formula
+    FormulaSolving
+    Lasers
+    DoubleSplit
+    ElectroMagnetic
+    LightAmplification
     WaveAddition
 
   build-depends:    base ^>=4.15.1.0

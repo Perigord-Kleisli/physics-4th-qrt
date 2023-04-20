@@ -20,6 +20,9 @@ red = PixelRGBA8 223 41 53 255
 blue :: PixelRGBA8
 blue = PixelRGBA8 0x11 0x9D 0xA4 255
 
+purple :: PixelRGBA8
+purple = "#AA61A5"
+
 green :: PixelRGBA8
 green = PixelRGBA8 0x96 0xF5 0x50 255
 
